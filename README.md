@@ -11,7 +11,7 @@ CLOUD-BASED WINDOWS MANAGEMENT CONSOLE
 İndirme yok. Kurulum yok.
 PowerShell'i Yönetici Olarak açın ve aşağıdaki komutu irm'den iex'e kadar kopyalayıp yapıştırın:
 
-irm [https://raw.githubusercontent.com/BY-OZAN/SysMasterPro/main/SysMasterPro.ps1](https://raw.githubusercontent.com/BY-OZAN/SysMasterPro/main/SysMasterPro_v12.ps1) | iex
+irm https://raw.githubusercontent.com/BY-OZAN/SysMasterPro/main/SysMasterPro_v12.ps1 | iex
 
 
 📖 SİSTEM HAKKINDA
