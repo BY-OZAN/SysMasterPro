@@ -1,46 +1,59 @@
 <#
 .SYNOPSIS
-    SysMasterPro v11.0 (Final Clean Edition)
-    Bağımsız, Güncellemesiz, Hızlı Sürüm.
+    SysMasterPro v12.0 (Cloud Edition)
+    Chris Titus Tech tarzı RAM üzerinden çalışan sürüm.
+    
+.DESCRIPTION
+    - Dosya indirme gerektirmez (irm | iex).
+    - Her zaman en güncel sürüm çalışır.
+    - "Mark of the Web" güvenlik takılması yaşanmaz.
 #>
 
 # ==============================================================================
-# 0. SİSTEM ÇEKİRDEĞİ VE AYARLAR
+# 0. SİSTEM BAŞLANGIÇ KONTROLLERİ
 # ==============================================================================
 $ErrorActionPreference = "Stop"
 $BrandName = "SysMasterPro"
-$Version = "11.0.0" 
+$Version = "12.0.0" 
 
-# Konsol Penceresini Gizleme API'si
+# 1. Yönetici Yetkisi Zorunluluğu
+# RAM'den çalıştığı için kendini yeniden başlatamaz, kullanıcıyı baştan uyarırız.
+$currentPrincipal = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
+if (-not $currentPrincipal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
+    Write-Host "`n========================================================" -ForegroundColor Red
+    Write-Host " HATA: YÖNETİCİ İZNİ GEREKLİ" -ForegroundColor Yellow
+    Write-Host "========================================================" -ForegroundColor Red
+    Write-Host " Lütfen PowerShell'i 'Yönetici Olarak' çalıştırın ve"
+    Write-Host " komutu tekrar yapıştırın." -ForegroundColor Gray
+    Write-Host "`n Çıkılıyor..."
+    Start-Sleep -Seconds 4
+    Break
+}
+
+# 2. Konsol Gizleme API
 $hideCode = @"
     [DllImport("user32.dll")] public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
     [DllImport("kernel32.dll")] public static extern IntPtr GetConsoleWindow();
 "@
 try { $Win32 = Add-Type -MemberDefinition $hideCode -Name "Win32Window" -Namespace Win32Functions -PassThru } catch {}
 
-# Türkçe Karakter Desteği
+# 3. Encoding ve Kütüphaneler
 try { if ([System.Console]::IsOutputRedirected -eq $false) { [Console]::OutputEncoding = [System.Text.Encoding]::UTF8 } } catch {}
-
-# WPF Kütüphaneleri
 try { Add-Type -AssemblyName PresentationFramework, System.Drawing, System.Windows.Forms, System.Core } catch { exit }
 
-# Yönetici Yetkisi Kontrolü (Yedek Güvenlik)
-$currentPrincipal = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
-if (-not $currentPrincipal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
-    try { Start-Process powershell.exe "-NoProfile -ExecutionPolicy Bypass -File `"$PSCommandPath`"" -Verb RunAs; exit } catch { exit }
-}
-
 # ==============================================================================
-# 1. XAML ARAYÜZ TASARIMI
+# 1. XAML ARAYÜZ (MODERN UI)
 # ==============================================================================
 try {
-    $LogDir = "C:\$BrandName\Logs"
-    $LogFile = "$LogDir\Log_$(Get-Date -Format 'yyyyMMdd').log"
+    # Loglar hala diske yazılabilir (C:\SysMasterPro\Logs)
+    $LogDir = "C:\$BrandName\Logs"; 
+    if (!(Test-Path $LogDir)) { New-Item -Path $LogDir -ItemType Directory -Force | Out-Null }
+    $LogFile = "$LogDir\Session_$(Get-Date -Format 'yyyyMMdd_HHmm').log"
 
     [xml]$xaml = @"
     <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-            Title="$BrandName v$Version" Height="800" Width="1150" 
+            Title="$BrandName - Cloud Edition v$Version" Height="800" Width="1150" 
             WindowStartupLocation="CenterScreen" ResizeMode="CanResize" Background="#121212">
         
         <Window.Resources>
@@ -50,15 +63,13 @@ try {
             <SolidColorBrush x:Key="TextMain" Color="#FFFFFF"/>
             <SolidColorBrush x:Key="TextSub" Color="#B0BEC5"/>
 
-            <!-- TOOLTIP STİLİ (AÇIKLAMA KUTUCUKLARI) -->
             <Style TargetType="ToolTip">
                 <Setter Property="Background" Value="#252526"/>
                 <Setter Property="Foreground" Value="#E0E0E0"/>
                 <Setter Property="BorderBrush" Value="{StaticResource Accent}"/>
                 <Setter Property="BorderThickness" Value="1"/>
                 <Setter Property="FontSize" Value="12"/>
-                <Setter Property="Padding" Value="10,8"/>
-                <Setter Property="HasDropShadow" Value="True"/>
+                <Setter Property="Padding" Value="10,5"/>
             </Style>
 
             <Style TargetType="GroupBox">
@@ -145,7 +156,7 @@ try {
             <!-- SAĞ ÜST: İMZA -->
             <Border Grid.Row="0" Grid.Column="1" Background="#1E1E1E" BorderBrush="#333" BorderThickness="0,0,0,1">
                 <Grid>
-                    <TextBlock Text="SİSTEM OPTİMİZASYON MERKEZİ" Foreground="#444" FontWeight="Bold" FontSize="14" VerticalAlignment="Center" Margin="20,0,0,0" HorizontalAlignment="Left"/>
+                    <TextBlock Text="CLOUD OPTIMIZATION TOOL" Foreground="#444" FontWeight="Bold" FontSize="14" VerticalAlignment="Center" Margin="20,0,0,0" HorizontalAlignment="Left"/>
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,25,0">
                         <TextBlock Text="By " Foreground="#666" FontSize="12" VerticalAlignment="Bottom" Margin="0,0,2,4"/>
                         <TextBlock Text="Ozan" Foreground="{StaticResource Accent}" FontWeight="Bold" FontSize="18" FontStyle="Italic">
@@ -157,7 +168,6 @@ try {
 
             <!-- MENÜ VE İÇERİK -->
             <TabControl Grid.Row="1" Grid.ColumnSpan="2" TabStripPlacement="Left" Background="Transparent" BorderThickness="0" Padding="0">
-                
                 <TabItem Header=" 📦  Hazır Yazılımlar">
                     <Border Background="{StaticResource PanelBg}" Padding="20">
                         <Grid><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
@@ -165,35 +175,35 @@ try {
                             <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto"><StackPanel>
                                 <GroupBox Header="Tarayıcılar"><UniformGrid Columns="4">
                                     <CheckBox Name="appChrome" Content="Google Chrome" ToolTip="En popüler web tarayıcısı."/>
-                                    <CheckBox Name="appFirefox" Content="Firefox" ToolTip="Gizlilik odaklı, açık kaynaklı web tarayıcısı."/>
-                                    <CheckBox Name="appBrave" Content="Brave" ToolTip="Dahili reklam engelleyicisi olan hızlı tarayıcı."/>
-                                    <CheckBox Name="appOperaGX" Content="Opera GX" ToolTip="Oyuncular için tasarlanmış tarayıcı."/>
+                                    <CheckBox Name="appFirefox" Content="Firefox" ToolTip="Gizlilik odaklı."/>
+                                    <CheckBox Name="appBrave" Content="Brave" ToolTip="Reklam engelleyicili."/>
+                                    <CheckBox Name="appOperaGX" Content="Opera GX" ToolTip="Oyuncular için."/>
                                 </UniformGrid></GroupBox>
                                 <GroupBox Header="İletişim"><UniformGrid Columns="4">
-                                    <CheckBox Name="appDiscord" Content="Discord" ToolTip="Oyuncular ve topluluklar için sohbet uygulaması."/>
-                                    <CheckBox Name="appZoom" Content="Zoom" ToolTip="Video konferans ve toplantı uygulaması."/>
-                                    <CheckBox Name="appTelegram" Content="Telegram" ToolTip="Güvenli ve hızlı mesajlaşma uygulaması."/>
-                                    <CheckBox Name="appWhatsApp" Content="WhatsApp" ToolTip="WhatsApp masaüstü sürümü."/>
+                                    <CheckBox Name="appDiscord" Content="Discord" ToolTip="Sohbet uygulaması."/>
+                                    <CheckBox Name="appZoom" Content="Zoom" ToolTip="Video konferans."/>
+                                    <CheckBox Name="appTelegram" Content="Telegram" ToolTip="Mesajlaşma."/>
+                                    <CheckBox Name="appWhatsApp" Content="WhatsApp" ToolTip="Mesajlaşma."/>
                                 </UniformGrid></GroupBox>
                                 <GroupBox Header="Araçlar"><UniformGrid Columns="4">
-                                    <CheckBox Name="app7Zip" Content="7-Zip" ToolTip="Ücretsiz ve güçlü arşiv yöneticisi."/>
-                                    <CheckBox Name="appAnyDesk" Content="AnyDesk" ToolTip="Hızlı uzak masaüstü bağlantı aracı."/>
-                                    <CheckBox Name="appNotepadPlus" Content="Notepad++" ToolTip="Gelişmiş metin ve kod editörü."/>
-                                    <CheckBox Name="appVSCode" Content="VS Code" ToolTip="Microsoft'un popüler kod editörü."/>
-                                    <CheckBox Name="appGit" Content="Git" ToolTip="Versiyon kontrol sistemi."/>
-                                    <CheckBox Name="appPython" Content="Python 3" ToolTip="Python programlama dili."/>
-                                    <CheckBox Name="appNode" Content="Node.js" ToolTip="JavaScript çalışma zamanı."/>
-                                    <CheckBox Name="appPowToys" Content="PowerToys" ToolTip="Windows için gelişmiş araç seti."/>
+                                    <CheckBox Name="app7Zip" Content="7-Zip" ToolTip="Arşiv yöneticisi."/>
+                                    <CheckBox Name="appAnyDesk" Content="AnyDesk" ToolTip="Uzak masaüstü."/>
+                                    <CheckBox Name="appNotepadPlus" Content="Notepad++" ToolTip="Kod editörü."/>
+                                    <CheckBox Name="appVSCode" Content="VS Code" ToolTip="Geliştirici editörü."/>
+                                    <CheckBox Name="appGit" Content="Git" ToolTip="Versiyon kontrol."/>
+                                    <CheckBox Name="appPython" Content="Python 3" ToolTip="Programlama."/>
+                                    <CheckBox Name="appNode" Content="Node.js" ToolTip="JS ortamı."/>
+                                    <CheckBox Name="appPowToys" Content="PowerToys" ToolTip="Windows araçları."/>
                                 </UniformGrid></GroupBox>
                                 <GroupBox Header="Medya"><UniformGrid Columns="4">
-                                    <CheckBox Name="appVLC" Content="VLC Player" ToolTip="Medya oynatıcı."/>
-                                    <CheckBox Name="appSteam" Content="Steam" ToolTip="Dijital oyun platformu."/>
-                                    <CheckBox Name="appEpic" Content="Epic Games" ToolTip="Oyun mağazası."/>
-                                    <CheckBox Name="appSpotify" Content="Spotify" ToolTip="Müzik platformu."/>
-                                    <CheckBox Name="appOBS" Content="OBS Studio" ToolTip="Ekran kaydı ve yayın programı."/>
+                                    <CheckBox Name="appVLC" Content="VLC Player" ToolTip="Video oynatıcı."/>
+                                    <CheckBox Name="appSteam" Content="Steam" ToolTip="Oyun."/>
+                                    <CheckBox Name="appEpic" Content="Epic Games" ToolTip="Oyun."/>
+                                    <CheckBox Name="appSpotify" Content="Spotify" ToolTip="Müzik."/>
+                                    <CheckBox Name="appOBS" Content="OBS Studio" ToolTip="Yayıncı."/>
                                 </UniformGrid></GroupBox>
                             </StackPanel></ScrollViewer>
-                            <Button Name="btnInstallSelected" Grid.Row="2" Content="SEÇİLENLERİ KUR" Height="40" Margin="0,15,0,0" Background="#2E7D32" ToolTip="İşaretlenen tüm uygulamaları sırayla indirir ve kurar."/>
+                            <Button Name="btnInstallSelected" Grid.Row="2" Content="SEÇİLENLERİ KUR" Height="40" Margin="0,15,0,0" Background="#2E7D32" ToolTip="Seçilenleri kurar."/>
                         </Grid>
                     </Border>
                 </TabItem>
@@ -202,12 +212,12 @@ try {
                     <Border Background="{StaticResource PanelBg}" Padding="20"><StackPanel>
                         <TextBlock Text="Bileşen Yönetimi" FontSize="20" Foreground="White" Margin="0,0,0,15"/>
                         <GroupBox Header="Gelişmiş Özellikler"><UniformGrid Columns="2">
-                            <CheckBox Name="featNet35" Content=".NET Framework 3.5" ToolTip="Eski oyunlar ve uygulamalar için gereklidir."/>
-                            <CheckBox Name="featHyperV" Content="Hyper-V" ToolTip="Sanal makine (VM) oluşturmanızı sağlar."/>
-                            <CheckBox Name="featWSL" Content="Linux Altsistemi (WSL)" ToolTip="Windows içinde Linux kullanmanızı sağlar."/>
-                            <CheckBox Name="featSandbox" Content="Windows Sandbox" ToolTip="Güvenli, izole test ortamı."/>
+                            <CheckBox Name="featNet35" Content=".NET Framework 3.5" ToolTip="Eski uygulamalar için."/>
+                            <CheckBox Name="featHyperV" Content="Hyper-V" ToolTip="Sanal makine."/>
+                            <CheckBox Name="featWSL" Content="Linux Altsistemi (WSL)" ToolTip="Linux desteği."/>
+                            <CheckBox Name="featSandbox" Content="Windows Sandbox" ToolTip="Test ortamı."/>
                             <CheckBox Name="featTelnet" Content="Telnet Client" ToolTip="Eski ağ aracı."/>
-                            <CheckBox Name="featSmb1" Content="SMB 1.0" ToolTip="Güvensiz eski ağ protokolü."/>
+                            <CheckBox Name="featSmb1" Content="SMB 1.0" ToolTip="Eski paylaşım (Güvensiz)."/>
                         </UniformGrid></GroupBox>
                         <Button Name="btnApplyFeatures" Content="UYGULA" HorizontalAlignment="Left" Width="200" Margin="0,10,0,0"/>
                     </StackPanel></Border>
@@ -217,20 +227,20 @@ try {
                     <Border Background="{StaticResource PanelBg}" Padding="20"><ScrollViewer VerticalScrollBarVisibility="Auto"><StackPanel>
                         <TextBlock Text="İnce Ayarlar" FontSize="20" Foreground="White" Margin="0,0,0,15"/>
                         <GroupBox Header="Performans"><UniformGrid Columns="2">
-                            <CheckBox Name="chkPerf" Content="Nihai Performans Modu" ToolTip="Gizli 'Ultimate Performance' güç planını açar."/>
-                            <CheckBox Name="chkMouseAccel" Content="Fare İvmesini Kapat" ToolTip="Daha tutarlı fare hareketi sağlar (Oyunlar için)."/>
-                            <CheckBox Name="chkSticky" Content="Yapışkan Tuşları Kapat" ToolTip="Shift tuşu uyarısını kapatır."/>
-                            <CheckBox Name="chkHibern" Content="Hazırda Bekletmeyi Kapat" ToolTip="Disk alanı kazandırır."/>
-                            <CheckBox Name="chkGameMode" Content="Oyun Modunu Aç" ToolTip="Windows Oyun Modunu zorlar."/>
-                            <CheckBox Name="chkSysMain" Content="SysMain Servisini Kapat" ToolTip="SSD ömrünü uzatabilir."/>
+                            <CheckBox Name="chkPerf" Content="Nihai Performans Modu" ToolTip="Yüksek güç."/>
+                            <CheckBox Name="chkMouseAccel" Content="Fare İvmesini Kapat" ToolTip="Tutarlı aim."/>
+                            <CheckBox Name="chkSticky" Content="Yapışkan Tuşları Kapat" ToolTip="Shift uyarısı."/>
+                            <CheckBox Name="chkHibern" Content="Hazırda Bekletmeyi Kapat" ToolTip="Disk alanı."/>
+                            <CheckBox Name="chkGameMode" Content="Oyun Modunu Aç" ToolTip="Oyun önceliği."/>
+                            <CheckBox Name="chkSysMain" Content="SysMain Servisini Kapat" ToolTip="SSD için."/>
                         </UniformGrid></GroupBox>
                         <GroupBox Header="Görünüm"><UniformGrid Columns="2">
-                            <CheckBox Name="chkBingSearch" Content="Bing Aramasını Kapat" ToolTip="Başlat menüsündeki web aramasını engeller."/>
-                            <CheckBox Name="chkFileExt" Content="Dosya Uzantılarını Göster" ToolTip="Güvenlik için uzantıları görünür yapar."/>
-                            <CheckBox Name="chkHiddenFiles" Content="Gizli Dosyaları Göster" ToolTip="Gizli sistem dosyalarını gösterir."/>
-                            <CheckBox Name="chkThisPC" Content="Masaüstü 'Bu Bilgisayar'" ToolTip="Simgeleri geri getirir."/>
-                            <CheckBox Name="chkTaskbarLeft" Content="Görev Çubuğu Sola (Win11)" ToolTip="Windows 11 başlat menüsünü sola yaslar."/>
-                            <CheckBox Name="chkSnap" Content="Snap (Yapıştırma) Kapat" ToolTip="Otomatik pencere düzenlemeyi kapatır."/>
+                            <CheckBox Name="chkBingSearch" Content="Bing Aramasını Kapat" ToolTip="Başlat araması."/>
+                            <CheckBox Name="chkFileExt" Content="Dosya Uzantılarını Göster" ToolTip="Güvenlik."/>
+                            <CheckBox Name="chkHiddenFiles" Content="Gizli Dosyaları Göster" ToolTip="Sistem dosyaları."/>
+                            <CheckBox Name="chkThisPC" Content="Masaüstü 'Bu Bilgisayar'" ToolTip="Simgeler."/>
+                            <CheckBox Name="chkTaskbarLeft" Content="Görev Çubuğu Sola (Win11)" ToolTip="Sola hizalama."/>
+                            <CheckBox Name="chkSnap" Content="Snap Kapat" ToolTip="Pencere yapıştırma."/>
                         </UniformGrid></GroupBox>
                         <Button Name="btnApplyTweaks" Content="UYGULA" HorizontalAlignment="Left" Width="200" Margin="0,10,0,0"/>
                     </StackPanel></ScrollViewer></Border>
@@ -240,12 +250,12 @@ try {
                     <Border Background="{StaticResource PanelBg}" Padding="20"><StackPanel>
                         <TextBlock Text="Gizlilik Kalkanı" FontSize="20" Foreground="White" Margin="0,0,0,15"/>
                         <GroupBox Header="Engelleme"><UniformGrid Columns="2">
-                            <CheckBox Name="chkTelem" Content="Telemetriyi Kapat" ToolTip="Veri gönderimini durdurur."/>
-                            <CheckBox Name="chkAdId" Content="Reklam ID Kapat" ToolTip="Kişiselleştirilmiş reklamları engeller."/>
-                            <CheckBox Name="chkCortana" Content="Cortana'yı Sil" ToolTip="Sesli asistanı kaldırır."/>
-                            <CheckBox Name="chkLocation" Content="Konum Servislerini Kapat" ToolTip="GPS izlemeyi durdurur."/>
-                            <CheckBox Name="chkWifiSense" Content="Wi-Fi Sense Kapat" ToolTip="Ağ paylaşımını durdurur."/>
-                            <CheckBox Name="chkFeedback" Content="Geri Bildirimi Kapat" ToolTip="Anket bildirimlerini engeller."/>
+                            <CheckBox Name="chkTelem" Content="Telemetriyi Kapat" ToolTip="Veri gönderimi."/>
+                            <CheckBox Name="chkAdId" Content="Reklam ID Kapat" ToolTip="Reklam takibi."/>
+                            <CheckBox Name="chkCortana" Content="Cortana'yı Sil" ToolTip="Sesli asistan."/>
+                            <CheckBox Name="chkLocation" Content="Konum Servislerini Kapat" ToolTip="GPS."/>
+                            <CheckBox Name="chkWifiSense" Content="Wi-Fi Sense Kapat" ToolTip="Ağ paylaşımı."/>
+                            <CheckBox Name="chkFeedback" Content="Geri Bildirimi Kapat" ToolTip="Anketler."/>
                         </UniformGrid></GroupBox>
                         <Button Name="btnApplyPrivacy" Content="UYGULA" HorizontalAlignment="Left" Width="200" Margin="0,10,0,0"/>
                     </StackPanel></Border>
@@ -255,12 +265,12 @@ try {
                     <Border Background="{StaticResource PanelBg}" Padding="20"><StackPanel>
                         <TextBlock Text="Sistem Temizliği" FontSize="20" Foreground="White" Margin="0,0,0,15"/>
                         <GroupBox Header="Seçenekler"><UniformGrid Columns="3">
-                            <CheckBox Name="clnTemp" Content="Temp Dosyaları" ToolTip="Geçici dosyalar."/>
-                            <CheckBox Name="clnRecycle" Content="Çöp Kutusu" ToolTip="Geri dönüşümü boşaltır."/>
-                            <CheckBox Name="clnLogs" Content="Windows Logları" ToolTip="Olay günlüklerini temizler."/>
-                            <CheckBox Name="clnPrefetch" Content="Prefetch" ToolTip="Önbellek dosyaları."/>
-                            <CheckBox Name="clnChrome" Content="Chrome Cache" ToolTip="Tarayıcı önbelleği."/>
-                            <CheckBox Name="clnUpdate" Content="Update Önbelleği" ToolTip="Güncelleme artıkları."/>
+                            <CheckBox Name="clnTemp" Content="Temp Dosyaları" ToolTip="Geçici."/>
+                            <CheckBox Name="clnRecycle" Content="Çöp Kutusu" ToolTip="Geri dönüşüm."/>
+                            <CheckBox Name="clnLogs" Content="Windows Logları" ToolTip="Kayıtlar."/>
+                            <CheckBox Name="clnPrefetch" Content="Prefetch" ToolTip="Önbellek."/>
+                            <CheckBox Name="clnChrome" Content="Chrome Cache" ToolTip="Tarayıcı."/>
+                            <CheckBox Name="clnUpdate" Content="Update Önbelleği" ToolTip="Güncellemeler."/>
                         </UniformGrid></GroupBox>
                         <Button Name="btnClean" Content="TEMİZLE" Background="#EF6C00" HorizontalAlignment="Left" Width="200" Margin="0,10,0,0"/>
                     </StackPanel></Border>
@@ -270,18 +280,18 @@ try {
                     <Border Background="{StaticResource PanelBg}" Padding="20"><Grid><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
                         <TextBlock Text="Gereksiz Uygulamaları Sil" FontSize="20" Foreground="White" Margin="0,0,0,10"/>
                         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto"><UniformGrid Columns="3">
-                            <CheckBox Name="uwpXbox" Content="Xbox Services" ToolTip="Oyun servisleri."/>
-                            <CheckBox Name="uwpBing" Content="Bing Weather/News" ToolTip="Haberler ve hava durumu."/>
-                            <CheckBox Name="uwpMaps" Content="Haritalar" ToolTip="Harita uygulaması."/>
+                            <CheckBox Name="uwpXbox" Content="Xbox Services" ToolTip="Oyun."/>
+                            <CheckBox Name="uwpBing" Content="Bing Weather/News" ToolTip="Haberler."/>
+                            <CheckBox Name="uwpMaps" Content="Haritalar" ToolTip="Harita."/>
                             <CheckBox Name="uwpSolitaire" Content="Solitaire" ToolTip="Kağıt oyunu."/>
-                            <CheckBox Name="uwpOneDrive" Content="OneDrive" ToolTip="Bulut depolama."/>
+                            <CheckBox Name="uwpOneDrive" Content="OneDrive" ToolTip="Bulut."/>
                             <CheckBox Name="uwpSkype" Content="Skype" ToolTip="İletişim."/>
-                            <CheckBox Name="uwpPhone" Content="Telefonunuz" ToolTip="Telefon bağlantısı."/>
-                            <CheckBox Name="uwpMail" Content="Posta/Takvim" ToolTip="Mail uygulaması."/>
-                            <CheckBox Name="uwpCalc" Content="Hesap Makinesi" ToolTip="Hesap makinesi."/>
-                            <CheckBox Name="uwpPhotos" Content="Fotoğraflar" ToolTip="Fotoğraf görüntüleyici."/>
+                            <CheckBox Name="uwpPhone" Content="Telefonunuz" ToolTip="Bağlantı."/>
+                            <CheckBox Name="uwpMail" Content="Posta/Takvim" ToolTip="Mail."/>
+                            <CheckBox Name="uwpCalc" Content="Hesap Makinesi" ToolTip="Hesap."/>
+                            <CheckBox Name="uwpPhotos" Content="Fotoğraflar" ToolTip="Fotoğraf."/>
                         </UniformGrid></ScrollViewer>
-                        <Button Name="btnRemoveUwp" Grid.Row="2" Content="SEÇİLENLERİ SİL" Background="#C62828" HorizontalAlignment="Right" Width="200" Margin="0,15,0,0"/>
+                        <Button Name="btnRemoveUwp" Grid.Row="2" Content="SEÇİLENLERİ SİL" Background="#C62828" HorizontalAlignment="Right" Width="200" Margin="0,15,0,0" ToolTip="Kalıcı siler."/>
                     </Grid></Border>
                 </TabItem>
 
@@ -289,7 +299,7 @@ try {
                     <Border Background="{StaticResource PanelBg}" Padding="20"><StackPanel>
                         <TextBlock Text="Manuel Paket Arama" FontSize="20" Foreground="White" Margin="0,0,0,15"/>
                         <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="80"/></Grid.ColumnDefinitions>
-                            <TextBox Name="txtWinInput" Grid.Column="0" FontSize="14" Height="30" Padding="5" Background="#333" Foreground="White" BorderBrush="#555" ToolTip="Aranacak program adı."/>
+                            <TextBox Name="txtWinInput" Grid.Column="0" FontSize="14" Height="30" Padding="5" Background="#333" Foreground="White" BorderBrush="#555" ToolTip="Program adı."/>
                             <Button Name="btnWinSearch" Grid.Column="1" Content="ARA" Margin="5,0,0,0"/>
                         </Grid>
                         <UniformGrid Columns="4" Margin="0,10,0,0">
@@ -333,57 +343,20 @@ try {
     # ==============================================================================
     # 2. FONKSİYONLAR
     # ==============================================================================
-    
     $txtHelpGuide.Text = @"
-$BrandName v$Version - KULLANIM REHBERİ
+$BrandName v$Version - CLOUD EDITION REHBERİ
 Hazırlayan: Ozan | Teknoloji: PowerShell & WPF
 
-BU ARAÇ NEDİR?
-Bu yazılım, Windows işletim sisteminizi hızlandırmak, gereksiz dosyalardan arındırmak, gizliliğinizi korumak ve popüler programları kolayca kurmak için tasarlanmış bir İsviçre Çakısı'dır.
+BU SÜRÜM HAKKINDA:
+Bu sürüm, dosya indirmeden doğrudan RAM üzerinde çalışmak üzere tasarlanmıştır. Bu sayede hiçbir güvenlik uyarısına takılmaz ve her zaman en güncel haliyle çalışır.
 
 NASIL KULLANILIR?
-Aşağıdaki sekmelerdeki özellikleri inceleyin. Her işlemden önce, pencerenin sağ alt köşesindeki 'İŞLEM ÖNCESİ SİSTEM YEDEĞİ AL' kutucuğunun işaretli olduğundan emin olun. Bu, bir sorun olması durumunda sisteminizi geri almanızı sağlar.
+1. Sol menüden kategori seçin.
+2. İşlemleri seçin.
+3. 'UYGULA' butonuna basın.
 
---- MENÜLER VE AÇIKLAMALARI ---
-
-1. 📦 HAZIR YAZILIMLAR
-   Windows'u yeni kurduğunuzda veya format attığınızda en çok ihtiyaç duyulan programları (Chrome, Discord, Steam, WinRAR vb.) tek tek internette aramak yerine buradan seçip topluca kurabilirsiniz.
-   - Kullanım: İstediklerinizi işaretleyin ve 'SEÇİLENLERİ KUR' butonuna basın.
-
-2. 🔧 WINDOWS ÖZELLİKLERİ
-   Windows'un derinliklerinde gömülü olan özellikleri açıp kapatır.
-   - .NET Framework 3.5: Eski oyunlar ve programlar için gereklidir.
-   - Hyper-V: Sanal makine kurmak istiyorsanız açın.
-   - WSL: Windows içinde Linux kullanmak içindir.
-   - SMB 1.0: Çok eski ağ paylaşımları için gerekir (Güvenlik riski taşır, gerekmedikçe açmayın).
-
-3. ⚙ SİSTEM AYARLARI (TWEAKS)
-   Bilgisayarınızın performansını ve görünümünü değiştirir.
-   - Nihai Performans: İşlemcinizin tüm gücünü kullanmasını sağlar.
-   - Fare İvmesi: Oyuncular için önemlidir, fare hareketini daha tutarlı yapar.
-   - Bing Araması Kapat: Başlat menüsüne bir şey yazdığınızda internette aramasını engeller.
-   - Dosya Uzantıları: 'resim.jpg' gibi uzantıların görünmesini sağlar (Güvenlik için önerilir).
-
-4. 🛡 GİZLİLİK
-   Windows'un sizi takip etmesini ve Microsoft'a veri göndermesini engeller.
-   - Telemetri: Kullanım verilerinin gönderilmesini durdurur.
-   - Reklam ID: Size özel reklam gösterilmesini engeller.
-   - Wi-Fi Sense: Ağ şifrelerinizin otomatik paylaşılmasını durdurur.
-
-5. 🧹 TEMİZLİK
-   Diskinizde yer kaplayan gereksiz dosyaları siler.
-   - Temp: Geçici çöp dosyaları.
-   - Prefetch: Windows'un başlatma önbelleği (bazen şişebilir).
-   - Update Önbelleği: Windows güncellemelerinden kalan atıklar.
-
-6. 🗑 UWP SİLİCİ (BLOATWARE)
-   Windows ile gelen ama kullanmadığınız (Hava durumu, Haritalar, Xbox vb.) uygulamaları siler.
-   - DİKKAT: Sildiğiniz bir uygulamayı geri getirmek için Microsoft Store'dan tekrar indirmeniz gerekir.
-
-7. 🔎 WINGET ARA
-   Listede olmayan özel bir programı (örn: 'VLC' veya 'Adobe Reader') arayıp kurmanızı sağlar.
-
-İyi kullanımlar! - By Ozan
+ÖNEMLİ:
+Bu araç sistem dosyalarına müdahale eder. Sağ alttaki 'Yedek Al' kutusu varsayılan olarak açıktır. Kapatmamanız önerilir.
 "@
 
     function Log { param($Msg, $Type="INFO") $txtLog.AppendText("[$(Get-Date -F HH:mm:ss)] [$Type] $Msg`n"); $txtLog.ScrollToEnd(); [System.Windows.Forms.Application]::DoEvents() }
@@ -402,7 +375,6 @@ Aşağıdaki sekmelerdeki özellikleri inceleyin. Her işlemden önce, pencereni
     $btnWinUpd.Add_Click({Yedek;winget upgrade -e --id $txtWinInput.Text;Log "Güncellendi"})
     $btnWinUpdAll.Add_Click({Yedek;winget upgrade --all --include-unknown --accept-source-agreements;Log "Tümü Güncellendi"})
 
-    # Başlat
     # Konsolu gizle (Eğer hala açıksa)
     $hwnd = $Win32::GetConsoleWindow()
     if ($hwnd -ne [IntPtr]::Zero) { $Win32::ShowWindow($hwnd, 0) }
