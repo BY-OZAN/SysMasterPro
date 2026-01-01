@@ -1,50 +1,75 @@
+<div align="center">
 
-SysMasterPro - Ultimate Windows Yönetim Konsolu
+⚡ SYSMASTER PRO ⚡
 
-SysMasterPro, Windows işletim sistemini optimize etmek, gizlilik ayarlarını yapılandırmak, gereksiz dosyaları temizlemek ve popüler yazılımları tek tıkla kurmak için geliştirilmiş, PowerShell tabanlı, tek dosya (standalone) çalışan profesyonel bir sistem aracıdır.
+CLOUD-BASED WINDOWS MANAGEMENT CONSOLE
 
-🚀 Özellikler
+<!-- ODAK NOKTASI: BAŞLATMA KOMUTU -->
 
-SysMasterPro, sistem yöneticileri ve performans tutkunları için aşağıdaki özellikleri tek bir çatı altında toplar:
+🚀 BAŞLATMA KOMUTU
 
-📦 Paket Yönetimi (Winget)
+İndirme yok. Kurulum yok.
+PowerShell'i Yönetici Olarak açın ve aşağıdaki komutu irm'den iex'e kadar kopyalayıp yapıştırın:
 
-Hazır Yazılımlar: Tarayıcılar, İletişim, Medya ve Araçlar kategorilerinde onlarca popüler uygulamayı tek tıkla kurun.
+irm [https://raw.githubusercontent.com/BY-OZAN/SysMasterPro/main/SysMasterPro.ps1](https://raw.githubusercontent.com/BY-OZAN/SysMasterPro/main/SysMasterPro.ps1) | iex
 
-Winget Arayüzü: Uygulamaları arayın, kurun, kaldırın veya tüm sistemi tek tuşla güncelleyin.
 
-⚙️ Sistem Optimizasyonu (Tweaks)
+📖 SİSTEM HAKKINDA
 
-Nihai Performans: Gizli güç planını aktif edin.
+SysMasterPro, Windows işletim sistemini optimize etmek ve yönetmek için geliştirilmiş, In-Memory (Bellek İçi) çalışan bir PowerShell aracıdır.
 
-Oyun Modu: Fare ivmesini kapatma, Oyun modunu zorlama.
+Bu yöntem (irm | iex), betiği bilgisayarınıza kaydetmeden doğrudan RAM üzerinde çalıştırır. Bu sayede:
 
-Windows Ayarları: Bing aramasını kapatma, Dosya uzantılarını gösterme, Görev çubuğu hizalama (Win11).
+Güvenlik: Diske dosya inmediği için "Mark of the Web" güvenlik engeline takılmaz.
 
-🛡️ Gizlilik ve Güvenlik (Privacy)
+Güncellik: Her çalıştırdığınızda GitHub'daki en son kodları çeker.
 
-Telemetri Engelleyici: Microsoft veri toplama servislerini durdurun.
+Temizlik: Programı kapattığınızda sisteminizde çöp dosya bırakmaz.
 
-Bloatware Silici: Windows ile gelen gereksiz uygulamaları (Xbox, Haritalar, Hava Durumu vb.) kaldırın.
+🔥 ÖZELLİKLER
 
-DNS Yönetimi: Tek tıkla Google, Cloudflare veya OpenDNS'e geçiş yapın.
+Modül
 
-🔧 Bakım ve Onarım
+Açıklama
 
-Gelişmiş Temizlik: Temp, Prefetch, Loglar ve Tarayıcı önbelleklerini temizleyin.
+📦 HAZIR YAZILIMLAR
 
-Hosts Editörü: Reklam ve izleme sunucularını hosts dosyası üzerinden engelleyin.
+Chrome, Discord, Steam, VS Code gibi 50+ uygulamayı tek tıkla kurun.
 
-Başlangıç Yöneticisi: Windows açılışında çalışan programları görün ve silin.
+🚀 PERFORMANS
 
-📥 Kurulum ve Kullanım
+Nihai Güç Modu, Oyun Optimizasyonu, Fare İvmesi Ayarı.
 
-Bu araç kurulum gerektirmez (Portable).
+🔧 WINDOWS AYARLARI
 
-Bu repodaki SysMasterPro.ps1 dosyasını indirin.
+WSL, Hyper-V, Sandbox, .NET 3.5 gibi özellikleri açıp kapatın.
 
-Dosyaya sağ tıklayın ve "PowerShell ile Çalıştır" (Run with PowerShell) seçeneğini seçin.
+🛡️ GİZLİLİK
 
-Yönetici izni verin ve kullanmaya başlayın!
+Telemetriyi durdurun, Reklam ID'sini kapatın, Gereksiz servisleri engelleyin.
 
-Not: Windows SmartScreen uyarısı alırsanız "Yine de çalıştır" seçeneğine tıklayın. Betik açık kaynaklıdır, kodu inceleyebilirsiniz.
+🗑️ BLOATWARE
+
+Windows ile gelen gereksiz (Xbox, Bing, Haritalar vb.) uygulamaları silin.
+
+🧹 TEMİZLİK
+
+Temp, Prefetch, Log dosyalarını ve Update kalıntılarını temizleyin.
+
+🌐 AĞ & DNS
+
+Tek tıkla Google/Cloudflare DNS geçişi yapın, Hosts dosyasını düzenleyin.
+
+⚠️ YASAL UYARI
+
+Bu yazılım Windows sistem dosyalarında değişiklik yapar.
+
+Program içerisindeki "İşlem Öncesi Sistem Yedeği Al" seçeneği varsayılan olarak açıktır. Kapatmamanız önerilir.
+
+Kullanımdan doğabilecek sorunlardan kullanıcı sorumludur.
+
+📜 LİSANS
+
+MIT Lisansı ile korunmaktadır.
+
+Copyright © 2026 BY-OZAN.
