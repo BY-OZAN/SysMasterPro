@@ -6,12 +6,15 @@ CLOUD-BASED WINDOWS MANAGEMENT CONSOLE
 
 <!-- ODAK NOKTASI: BAŞLATMA KOMUTU -->
 
-🚀 BAŞLATMA KOMUTU
 
-İndirme yok. Kurulum yok.
-PowerShell'i Yönetici Olarak açın ve aşağıdaki komutu irm'den iex'e kadar kopyalayıp yapıştırın:
 
+
+## BAŞLAT KOMUTU
+
+### Stable Branch (Recommended)
+```powershell
 irm https://raw.githubusercontent.com/BY-OZAN/SysMasterPro/main/SysMasterPro_v11.ps1 | iex
+```
 
 
 📖 SİSTEM HAKKINDA
