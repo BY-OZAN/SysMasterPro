@@ -2,12 +2,12 @@
 
 
 <div align="center">
-##    ⚡ SYSMASTER PRO ⚡
-CLOUD-BASED WINDOWS MANAGEMENT CONSOLE
+
+
 
 <!-- ODAK NOKTASI: BAŞLATMA KOMUTU -->
 
-
+## ⚡ SYSMASTER PRO ⚡
 
 
 ## BAŞLAT KOMUTU
