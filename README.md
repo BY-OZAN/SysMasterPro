@@ -11,7 +11,7 @@ CLOUD-BASED WINDOWS MANAGEMENT CONSOLE
 
 ## BAŞLAT KOMUTU
 
-### Stable Branch (Recommended)
+### POWERSHELL'E YAPIŞTIR
 ```powershell
 irm https://raw.githubusercontent.com/BY-OZAN/SysMasterPro/main/SysMasterPro_v11.ps1 | iex
 ```
